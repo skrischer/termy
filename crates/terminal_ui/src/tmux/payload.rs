@@ -242,6 +242,15 @@ mod tests {
     }
 
     #[test]
+    fn parse_subscription_changed_allows_empty_value_without_trailing_space() {
+        // Defensive fallback branch: a `:` separator with no trailing space
+        // still yields an empty value rather than a stray colon.
+        let parsed = parse_subscription_changed(b"%subscription-changed p $0 @0 0 %0 :")
+            .expect("empty value");
+        assert_eq!(parsed.4, "");
+    }
+
+    #[test]
     fn parse_subscription_changed_rejects_other_lines() {
         assert!(parse_subscription_changed(b"%output %0 hi").is_none());
         assert!(parse_subscription_changed(b"%subscription-changed").is_none());

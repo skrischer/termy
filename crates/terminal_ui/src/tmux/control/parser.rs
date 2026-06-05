@@ -447,6 +447,34 @@ mod tests {
     }
 
     #[test]
+    fn control_state_machine_routes_subscription_changed_notifications_inside_command_block() {
+        let mut sm = ControlStateMachine::default();
+        assert_eq!(
+            sm.on_line(b"%begin 81 1 0").expect("begin"),
+            ControlStateEvent::CommandBegin
+        );
+        assert_eq!(
+            sm.on_line(b"%subscription-changed p_all $0 @0 0 %0 : /tmp")
+                .expect("subscription"),
+            ControlStateEvent::Notification(TmuxNotification::SubscriptionChanged {
+                name: "p_all".to_string(),
+                session: "$0".to_string(),
+                window: "@0".to_string(),
+                pane: "%0".to_string(),
+                value: "/tmp".to_string(),
+            })
+        );
+        assert_eq!(
+            sm.on_line(b"captured").expect("output line"),
+            ControlStateEvent::None
+        );
+
+        let (is_error, output) = expect_command_complete(sm.on_line(b"%end 81 1 0").expect("end"));
+        assert!(!is_error);
+        assert_eq!(output, "captured");
+    }
+
+    #[test]
     fn control_state_machine_handles_error_block_with_interleaved_refresh() {
         let mut sm = ControlStateMachine::default();
         assert_eq!(

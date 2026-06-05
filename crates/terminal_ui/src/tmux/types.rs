@@ -98,6 +98,16 @@ pub struct TmuxSessionSummary {
 pub enum TmuxNotification {
     Output { pane_id: String, bytes: Vec<u8> },
     NeedsRefresh,
+    /// A `%subscription-changed` notification: a format registered via
+    /// `TmuxClient::subscribe` changed value. `pane` is `-` for
+    /// window- or session-scoped subscriptions.
+    SubscriptionChanged {
+        name: String,
+        session: String,
+        window: String,
+        pane: String,
+        value: String,
+    },
     Warning(String),
     Exit(Option<String>),
 }

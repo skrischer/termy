@@ -2,7 +2,7 @@
 
 use super::super::payload::{
     is_refresh_notification, parse_exit_reason, parse_output_notification,
-    strip_control_line_wrappers,
+    parse_subscription_changed, strip_control_line_wrappers,
 };
 use super::super::types::{TmuxControlError, TmuxNotification};
 
@@ -77,6 +77,17 @@ impl ControlStateMachine {
                 pane_id,
                 bytes,
             }));
+        }
+        if let Some((name, session, window, pane, value)) = parse_subscription_changed(line) {
+            return Ok(ControlStateEvent::Notification(
+                TmuxNotification::SubscriptionChanged {
+                    name,
+                    session,
+                    window,
+                    pane,
+                    value,
+                },
+            ));
         }
         if is_refresh_notification(line) {
             return Ok(ControlStateEvent::Notification(
